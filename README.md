@@ -60,7 +60,7 @@ Read the [changelog](CHANGELOG.md) for latest changes.
 # Installation
 
 ```sh
-$ npm -g install madge
+npm -g install madge
 ```
 
 ## Graphviz (optional)
@@ -70,13 +70,13 @@ $ npm -g install madge
 ### Mac OS X
 
 ```sh
-$ brew install graphviz || port install graphviz
+brew install graphviz || port install graphviz
 ```
 
 ### Ubuntu
 
 ```sh
-$ apt-get install graphviz
+apt-get install graphviz
 ```
 
 # API
@@ -151,6 +151,18 @@ madge('path/to/app.js').then((res) => {
 });
 ```
 
+#### .leaves()
+
+> Return an `Array` of all modules that have no dependencies.
+
+```javascript
+const madge = require('madge');
+
+madge('path/to/app.js').then((res) => {
+	console.log(res.leaves());
+});
+```
+
 #### .dot()
 
 > Returns a `Promise` resolved with a DOT representation of the module dependency graph.
@@ -220,7 +232,9 @@ Property | Type | Default | Description
 `detectiveOptions` | Object | false | Custom `detective` options for [dependency-tree](https://github.com/dependents/node-dependency-tree) and [precinct](https://github.com/dependents/node-precinct#usage)
 `dependencyFilter` | Function | false | Function called with a dependency filepath (exclude substree by returning false)
 
-> Note that when running the CLI it's possible to use a runtime configuration file. The config should placed in `.madgerc` in your project or home folder. Look [here](https://github.com/dominictarr/rc#standards) for alternative locations for the file. Here's an example:
+You can use configuration file either in `.madgerc` in your project or home folder or directly in `package.json`. Look [here](https://github.com/dominictarr/rc#standards) for alternative locations for the file.
+
+> .madgerc
 
 ```json
 {
@@ -233,6 +247,23 @@ Property | Type | Default | Description
 }
 ```
 
+> package.json
+```json
+{
+	"name": "foo",
+	"version": "0.0.1",
+	...
+	"madge": {
+		"fontSize": "10px",
+		"graphVizOptions": {
+			"G": {
+				"rankdir": "LR"
+			}
+		}
+	}
+}
+```
+
 # CLI
 
 ## Examples
@@ -240,73 +271,79 @@ Property | Type | Default | Description
 > List dependencies from a single file
 
 ```sh
-$ madge path/src/app.js
+madge path/src/app.js
 ```
 
 > List dependencies from multiple files
 
 ```sh
-$ madge path/src/foo.js path/src/bar.js
+madge path/src/foo.js path/src/bar.js
 ```
 
 > List dependencies from all *.js files found in a directory
 
 ```sh
-$ madge path/src
+madge path/src
 ```
 
 > List dependencies from multiple directories
 
 ```sh
-$ madge path/src/foo path/src/bar
+madge path/src/foo path/src/bar
 ```
 
 > List dependencies from all *.js and *.jsx files found in a directory
 
 ```sh
-$ madge --extensions js,jsx path/src
+madge --extensions js,jsx path/src
 ```
 
 > Finding circular dependencies
 
 ```sh
-$ madge --circular path/src/app.js
+madge --circular path/src/app.js
 ```
 
 > Show modules that depends on a given module
 
 ```sh
-$ madge --depends wheels.js path/src/app.js
+madge --depends wheels.js path/src/app.js
 ```
 
 > Show modules that no one is depending on
 
 ```sh
-$ madge --orphans path/src/
+madge --orphans path/src/
+```
+
+> Show modules that have no dependencies
+
+```sh
+madge --leaves path/src/
 ```
 
 > Excluding modules
 
 ```sh
-$ madge --exclude '^(foo|bar)\.js$' path/src/app.js
+madge --exclude '^(foo|bar)\.js$' path/src/app.js
 ```
 
 > Save graph as a SVG image (requires [Graphviz](#graphviz-optional))
 
 ```sh
-$ madge --image graph.svg path/src/app.js
+madge --image graph.svg path/src/app.js
 ```
 
 > Save graph as a [DOT](http://en.wikipedia.org/wiki/DOT_language) file for further processing (requires [Graphviz](#graphviz-optional))
 
 ```sh
-$ madge --dot path/src/app.js > graph.gv
+madge --dot path/src/app.js > graph.gv
 ```
 
 > Using pipe to transform tree (this example will uppercase all paths)
 
 ```sh
-$ madge --json path/src/app.js | tr '[a-z]' '[A-Z]' | madge --stdin
+madge --json path/src/app.js | tr '[a-z]' '[A-Z]' | madge --stdin
 ```
 
 # Debugging
@@ -314,14 +351,14 @@ $ madge --json path/src/app.js | tr '[a-z]' '[A-Z]' | madge --stdin
 > To enable debugging output if you encounter problems, run madge with the `--debug` option then throw the result in a gist when creating issues on GitHub.
 
 ```sh
-$ madge --debug path/src/app.js
+madge --debug path/src/app.js
 ```
 
 # Running tests
 
 ```sh
-$ npm install
-$ npm test
+npm install
+npm test
 ```
 
 # FAQ
@@ -330,14 +367,26 @@ $ npm test
 
 It could happen that the files you're not seeing have been skipped due to errors or that they can't be resolved. Run madge with the `--warning` option to see skipped files. If you need even more info run with the `--debug` option.
 
-## Using both CommonJS and ES6 imports in same file?
+## Using mixed import syntax in the same file?
 
 Only one syntax is used by default. You can use both though if you're willing to take the degraded performance. Put this in your madge config to enable mixed imports.
 
+For ES6 + CommonJS:
 ```json
 {
 	"detectiveOptions": {
 		"es6": {
+			"mixedImports": true
+		}
+	}
+}
+```
+
+For TypeScript + CommonJS:
+```json
+{
+	"detectiveOptions": {
+		"ts": {
 			"mixedImports": true
 		}
 	}
@@ -410,7 +459,7 @@ minimize a global energy function, which is equivalent to statistical multi-dime
 This project exists thanks to all the people who contribute.
 <a href="https://github.com/pahen/madge/graphs/contributors"><img src="https://opencollective.com/madge/contributors.svg?width=890&button=false" alt="Contributors"/></a>
 
-## Donations
+## Donations ❤️
 
 Thanks to the awesome people below for making donations! 🙏[[Donate](https://paypal.me/pahen)]
 
@@ -420,9 +469,15 @@ Thanks to the awesome people below for making donations! 🙏[[Donate](https://p
 	<img src="https://github.com/landonalder.png" width="64"/>
 </a>
 
+**Peter Verswyvelen**
+
+<a href="https://github.com/Ziriax" target="_blank">
+	<img src="https://github.com/Ziriax.png" width="64"/>
+</a>
+
 ## Backers
 
-Thank you so much all awesome backers! 🙏[[Become a backer](https://opencollective.com/madge#backer)]
+[[Become a backer](https://opencollective.com/madge#backer)]
 
 <a href="https://opencollective.com/madge#backers" target="_blank"><img src="https://opencollective.com/madge/backers.svg?width=890&button=false"></a>
 

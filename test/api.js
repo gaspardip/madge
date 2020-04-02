@@ -5,9 +5,6 @@ const os = require('os');
 const path = require('path');
 const fs = require('mz/fs');
 const madge = require('../lib/api');
-const expect = require('expect');
-const toMatchSnapshot = require('expect-mocha-snapshot');
-expect.extend({toMatchSnapshot});
 
 require('should');
 
@@ -103,6 +100,25 @@ describe('API', () => {
 		}).catch(done);
 	});
 
+	it('extracts dependencies but excludes .git', (done) => {
+		// eslint-disable-next-line no-sync
+		fs.renameSync(`${__dirname}/git/.git_tmp`, `${__dirname}/git/.git`);
+
+		madge(__dirname + '/git/a.js', {}).then((res) => {
+			res.obj().should.eql({
+				'a.js': ['b.js', 'c.js'],
+				'b.js': ['c.js'],
+				'c.js': []
+			});
+			done();
+		}).catch(() => {
+			done();
+		}).finally(() => {
+			// eslint-disable-next-line no-sync
+			fs.renameSync(`${__dirname}/git/.git`, `${__dirname}/git/.git_tmp`);
+		});
+	});
+
 	describe('dependencyFilter', () => {
 		it('will stop traversing when returning false', (done) => {
 			madge(__dirname + '/cjs/a.js', {
@@ -190,22 +206,14 @@ describe('API', () => {
 	});
 
 	describe('dot()', () => {
-		it('returns a promise resolved with graphviz DOT output', async function () {
-			const res = await madge(__dirname + '/cjs/b.js', {
-				fontSize: '0',
-				// Custom config to make test pass on different OS
-				graphVizOptions: {
-					G: {
-						layout: 'neato',
-						overlap: true
-					},
-					N: {
-						pos: '0,0!',
-						height: 1
-					}
-				}
-			});
-			expect(await res.dot()).toMatchSnapshot(this);
+		it('returns a promise resolved with graphviz DOT output', async () => {
+			const res = await madge(__dirname + '/cjs/b.js');
+			const output = await res.dot();
+			output.should.match(/digraph G/);
+			output.should.match(/bgcolor="#111111"/);
+			output.should.match(/fontcolor="#c6c5fe"/);
+			output.should.match(/color="#757575"/);
+			output.should.match(/fontcolor="#cfffac"/);
 		});
 	});
 
@@ -222,6 +230,15 @@ describe('API', () => {
 		it('returns modules that no one is depending on', (done) => {
 			madge(__dirname + '/cjs/normal').then((res) => {
 				res.orphans().should.eql(['a.js']);
+				done();
+			}).catch(done);
+		});
+	});
+
+	describe('leaves()', () => {
+		it('returns modules that have no dependencies', (done) => {
+			madge(__dirname + '/cjs/normal').then((res) => {
+				res.leaves().should.eql(['d.js']);
 				done();
 			}).catch(done);
 		});

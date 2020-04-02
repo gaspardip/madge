@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## v3.8.0 (Mars 09, 2020)
+
+* Added `leaves` option to show modules that do not have dependencies (Thanks to @avahe-kellenberger)
+
+## v3.7.0 (Jan 30, 2020)
+
+* Support package.json config (Thanks to @zekth)
+
+## v3.6.0 (Nov 11, 2019)
+
+* Added support for TypeScript with mixed import syntax (Thanks to @codemonkey800)
+
+## v3.5.1 (Nov 07, 2019)
+
+* Added funding to package.json
+
+## v3.5.0 (Oct 28, 2019)
+
+* Reduce processing by excluding .git content (Thanks to @villelaitila)
+
 ## v3.4.4 (Feb 12, 2019)
 
 * Exclude test folder from npm registry (Thanks to @SethDavenport)
